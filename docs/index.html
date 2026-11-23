@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AmpDesk — Account Manager Command Centre</title>
+<style>
+:root{
+  --bg:#f3f5f8; --card:#ffffff; --line:#e2e8f0; --ink:#0f172a; --muted:#64748b;
+  --navy:#0b1424; --navy2:#16233c; --amber:#f5a524;
+  --ok:#15803d; --okbg:#e8f6ee; --warn:#b45309; --warnbg:#fef3c7;
+  --bad:#b91c1c; --badbg:#fee2e2; --blue:#1d4ed8; --bluebg:#dbeafe;
+  --violet:#6d28d9; --violetbg:#ede9fe; --teal:#0f766e; --tealbg:#ccfbf1;
+  --grey:#475569; --greybg:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+.shell{display:flex;min-height:100vh}
+
+.sidebar{width:216px;flex:0 0 216px;background:var(--navy);color:#dfe7f3;display:flex;flex-direction:column;padding:20px 14px;gap:4px;position:sticky;top:0;height:100vh}
+.brand{font-size:21px;font-weight:800;color:#fff;letter-spacing:.3px}
+.brand em{color:var(--amber);font-style:normal}
+.tag{font-size:11px;color:#9fb0c8;margin:4px 0 16px;line-height:1.5}
+.sidebar nav{display:grid;gap:4px}
+.sidebar nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#c7d2e4;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.sidebar nav button:hover{background:var(--navy2)}
+.sidebar nav button.active{background:var(--amber);color:#231303}
+.legend{margin-top:auto;font-size:11px;color:#8fa1bd;display:grid;gap:7px;padding-top:16px}
+.legend b{color:#c7d2e4;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px}
+.legend .sev{display:inline-block;vertical-align:middle}
+
+.main{flex:1;min-width:0;padding:22px 28px 44px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.topbar h1{font-size:19px;margin:0}
+.topbar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#e9eef5;border:1px solid var(--line);color:#334155;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;white-space:nowrap}
+
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+.tile .val{font-size:23px;font-weight:800;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+.tile .tgt{font-size:11.5px;color:var(--muted)}
+.tile.good .val{color:var(--ok)} .tile.bad .val{color:var(--bad)} .tile.mid .val{color:var(--warn)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.card h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 12px}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.two .card{margin-bottom:0}
+
+.alerts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button.alert{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit;width:100%}
+button.alert:hover{border-color:#94a3b8;background:#f8fafc}
+.sev{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:0 0 9px;display:inline-block}
+.sev.critical{background:#dc2626;box-shadow:0 0 0 3px #fee2e2}
+.sev.warning{background:#d97706;box-shadow:0 0 0 3px #fef3c7}
+.sev.info{background:#2563eb;box-shadow:0 0 0 3px #dbeafe}
+.alert .body{flex:1;min-width:0}
+.alert .t{display:block;font-weight:700;font-size:13px}
+.alert .d{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.area{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#64748b;background:#f1f5f9;border-radius:4px;padding:2px 6px;margin-left:8px;flex:0 0 auto}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid #eef2f6;vertical-align:top}
+tbody tr:hover td{background:#f8fafc}
+.tt{font-weight:600}
+.small{font-size:12px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.ok{background:var(--okbg);color:var(--ok)} .warn{background:var(--warnbg);color:var(--warn)}
+.bad{background:var(--badbg);color:var(--bad)} .blue{background:var(--bluebg);color:var(--blue)}
+.violet{background:var(--violetbg);color:var(--violet)} .teal{background:var(--tealbg);color:var(--teal)}
+.grey{background:var(--greybg);color:var(--grey)}
+.flag{display:inline-block;font-size:10.5px;font-weight:700;color:#9a3412;background:#ffedd5;border-radius:6px;padding:2px 7px;margin:2px 4px 0 0}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;font-family:inherit}
+.filters button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filters button .n{color:var(--muted);font-weight:700}
+.filters button.active .n{color:#cbd5e1}
+
+.ustack{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#e2e8f0;margin:8px 0 6px}
+.u-bill{background:#16a34a}.u-down{background:#ef4444}.u-idle{background:#cbd5e1}
+.meter{height:8px;background:#e2e8f0;border-radius:5px;overflow:hidden;margin-top:6px}
+.meter span{display:block;height:100%}
+.meter.ok span{background:#16a34a}.meter.warn span{background:#f59e0b}.meter.bad span{background:#ef4444}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.tcard .thead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tcard .thead b{font-size:14px}
+.rows{display:grid;gap:5px;margin:10px 0;font-size:12.5px}
+.rows .r{display:flex;justify-content:space-between;gap:10px}
+.rows .r .k{color:var(--muted)}
+.opps{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;display:grid;gap:4px}
+.opps li{display:flex;justify-content:space-between;gap:10px;border-top:1px dashed #e2e8f0;padding-top:4px}
+.jchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.jchips .chip{font-size:11px;padding:2px 8px}
+.buckets{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.qcard{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:#fff}
+.qcard .qh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.qcard .qh b{font-size:12.5px}
+
+.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%{background:#fde68a}100%{background:transparent}}
+.footer{margin-top:10px;font-size:12px;color:var(--muted)}
+.statrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:960px){
+  .shell{flex-direction:column}
+  .sidebar{width:auto;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px}
+  .brand{font-size:18px}
+  .tag{display:none}
+  .sidebar nav{display:flex;flex-wrap:wrap;gap:4px}
+  .sidebar nav button{padding:7px 10px;width:auto;font-size:12.5px}
+  .legend{display:none}
+  .alerts,.two,.grid,.buckets{grid-template-columns:1fr}
+}
+@media print{.sidebar{display:none}.main{padding:0}}
+
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">Amp<em>Desk</em></div>
+    <div class="tag">Account Manager Command Centre<br>Electrical service operations</div>
+    <nav id="nav" aria-label="Sections">
+      <button data-tab="board" class="active">Command Board</button>
+      <button data-tab="jobs">Jobs &amp; Margins</button>
+      <button data-tab="quotes">Quote Pipeline</button>
+      <button data-tab="team">Team &amp; Utilisation</button>
+      <button data-tab="clients">Client Accounts</button>
+    </nav>
+    <div class="legend">
+      <b>Severity</b>
+      <span><span class="sev critical"></span> Critical — act today</span>
+      <span><span class="sev warning"></span> Warning — this week</span>
+      <span><span class="sev info"></span> Info — monitor</span>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h1 id="view-title">Command Board</h1>
+      <div class="right">
+        <span class="chip" id="today"></span>
+        <span class="chip">Demo data — illustrative</span>
+      </div>
+    </div>
+    <div id="view"></div>
+    <div class="footer">AmpDesk demo build — figures are illustrative. All KPIs are computed live from the dataset by logic covered under automated tests. Built by Tobias Hall · github.com/L-S-CAPITAL</div>
+  </main>
+</div>
+<script>
+/* AmpDesk core logic — pure functions, no DOM, no dependencies.
+ * Runs in the browser (window.AmpDeskLogic) and in Node (module.exports) for tests. */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.AmpDeskLogic = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var DEFAULT_TARGETS = {
+    grossMarginPct: 32,        // target gross margin per job
+    watchBandPct: 5,           // points below target before a job counts as eroded
+    billableUtilisationPct: 78,
+    downtimePct: 10,           // max acceptable non-billable downtime share
+    quoteFollowUpDays: 5,      // chase a sent quote after this many days
+    quoteStaleDays: 10,        // a quote older than this is stale
+    quoteConversionPct: 55,
+    closeOutDays: 7,           // completed -> invoiced within this window
+    unscheduleAlertDays: 5,    // approved but unscheduled after this many days
+    contactCadenceDays: 30,    // minimum client touch frequency
+    notesAuditMinPct: 90       // min share of technician job notes audited
+  };
+
+  var OPEN_QUOTE = { sent: 1, viewed: 1, 'follow-up': 1 };
+  var SEVERITY_RANK = { critical: 0, warning: 1, info: 2 };
+  var fmtAUD = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 });
+  function money(n) { return fmtAUD.format(n || 0); }
+
+  // --- dates ---------------------------------------------------------------
+  function parseISO(iso) {
+    var p = String(iso).split('-');
+    return Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function daysBetween(fromISO, toISO) {
+    return Math.round((parseISO(toISO) - parseISO(fromISO)) / 86400000);
+  }
+  function addDaysISO(iso, n) {
+    return new Date(parseISO(iso) + n * 86400000).toISOString().slice(0, 10);
+  }
+
+  // --- small helpers --------------------------------------------------------
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function pctOf(part, whole) { return whole > 0 ? (part / whole) * 100 : 0; }
+  function isOpenJob(job) {
+    return job.status === 'approved' || job.status === 'scheduled' || job.status === 'in-progress';
+  }
+  function isClosedJob(job) { return job.status === 'completed' || job.status === 'invoiced'; }
+  function statusForMargin(marginPct, targets) {
+    var floor = targets.grossMarginPct - targets.watchBandPct;
+    if (marginPct >= targets.grossMarginPct) return 'on-target';
+    if (marginPct >= floor) return 'watch';
+    return 'eroded';
+  }
+
+  function avgCostRate(techIds, technicians) {
+    if (!techIds || techIds.length === 0) throw new Error('Job has no assigned technicians');
+    var byId = {};
+    technicians.forEach(function (t) { byId[t.id] = t; });
+    var sum = 0;
+    for (var i = 0; i < techIds.length; i++) {
+      var t = byId[techIds[i]];
+      if (!t) throw new Error('Unknown technician id: ' + techIds[i]);
+      sum += t.costRate;
+    }
+    return sum / techIds.length;
+  }
+
+  // --- job costing ----------------------------------------------------------
+  function computeJobCost(job, technicians) {
+    var blended = avgCostRate(job.techIds, technicians);
+    var labourCost = round2(job.actualHrs * blended);
+    var materialsCost = round2(job.materialsCost || 0);
+    return {
+      blendedCostRate: blended,
+      labourCost: labourCost,
+      materialsCost: materialsCost,
+      costToDate: round2(labourCost + materialsCost)
+    };
+  }
+
+  /* Estimate-to-complete: actual cost so far + remaining hours at the blended
+   * crew rate + materials still to come. Drives projected margin on open jobs
+   * so erosion is caught during delivery, not at post-job review. */
+  function projectedCost(job, technicians) {
+    var c = computeJobCost(job, technicians);
+    var etc = job.estToComplete || { hrs: 0, materials: 0 };
+    return round2(c.costToDate + etc.hrs * c.blendedCostRate + (etc.materials || 0));
+  }
+
+  function jobMarginView(job, technicians, targets, todayISO) {
+    var cost = computeJobCost(job, technicians);
+    var projected = projectedCost(job, technicians);
+    var sell = job.status === 'invoiced' && job.invoiceAmount != null ? job.invoiceAmount : job.quoted;
+    var effectiveCost = isClosedJob(job) ? cost.costToDate : projected;
+    var effectiveMargin = sell - effectiveCost;
+    var effectiveMarginPct = round2(pctOf(effectiveMargin, sell));
+    var marginToDatePct = round2(pctOf(sell - cost.costToDate, sell));
+
+    var flags = [];
+    if ((job.status === 'in-progress' || job.status === 'completed') && job.actualHrs > job.budgetHrs) {
+      flags.push('hrs-over-budget');
+    }
+    if (job.whs) {
+      var missing = [];
+      if (job.status === 'scheduled' || job.status === 'in-progress') {
+        if (!job.whs.swms) missing.push('SWMS');
+        if (!job.whs.jsa) missing.push('JSA');
+      }
+      if (job.status === 'completed' && !job.whs.testResults) missing.push('test results');
+      if (missing.length) flags.push('whs-incomplete');
+    }
+    if (job.status === 'completed' && job.completedDate && todayISO &&
+        daysBetween(job.completedDate, todayISO) > targets.closeOutDays) {
+      flags.push('close-out-overdue');
+    }
+    if (job.status === 'completed' && job.notesAudited === false) {
+      flags.push('notes-not-audited');
+    }
+    if (job.status === 'approved' && !job.scheduledDate && job.approvedDate && todayISO &&
+        daysBetween(job.approvedDate, todayISO) > targets.unscheduleAlertDays) {
+      flags.push('unscheduled');
+    }
+
+    return {
+      id: job.id,
+      sell: sell,
+      costToDate: cost.costToDate,
+      projectedCost: projected,
+      effectiveMargin: effectiveMargin,
+      effectiveMarginPct: effectiveMarginPct,
+      marginToDatePct: marginToDatePct,
+      status: statusForMargin(effectiveMarginPct, targets),
+      hrsUsedPct: pctOf(job.actualHrs, job.budgetHrs),
+      hrsRemaining: Math.max(0, job.budgetHrs - job.actualHrs),
+      flags: flags
+    };
+  }
+
+  // --- technician utilisation -------------------------------------------------
+  function technicianUtilisation(tech, targets) {
+    var avail = tech.availableHrsPerWeek || 0;
+    var billablePct = pctOf(tech.billableHrsThisWeek, avail);
+    var downtimePct = pctOf(tech.downtimeHrsThisWeek, avail);
+    var flags = [];
+    if (downtimePct > targets.downtimePct * 2) flags.push('downtime-critical');
+    else if (downtimePct > targets.downtimePct) flags.push('downtime-over-target');
+    if ((tech.notesAuditedPct || 0) < targets.notesAuditMinPct) flags.push('notes-audit-gap');
+    return {
+      billablePct: round2(billablePct),
+      downtimePct: round2(downtimePct),
+      idlePct: round2(Math.max(0, 100 - billablePct - downtimePct)),
+      flags: flags
+    };
+  }
+
+  function fleetUtilisation(technicians) {
+    var avail = 0, bill = 0, down = 0;
+    (technicians || []).forEach(function (t) {
+      avail += t.availableHrsPerWeek || 0;
+      bill += t.billableHrsThisWeek || 0;
+      down += t.downtimeHrsThisWeek || 0;
+    });
+    return {
+      availableHrs: avail,
+      billableHrs: bill,
+      downtimeHrs: down,
+      billablePct: round2(pctOf(bill, avail)),
+      downtimePct: round2(pctOf(down, avail))
+    };
+  }
+
+  // --- quote pipeline -----------------------------------------------------------
+  function quoteAgeDays(quote, todayISO) {
+    var ref = quote.status === 'won' || quote.status === 'lost'
+      ? (quote.closedDate || quote.sentDate)
+      : quote.sentDate;
+    return daysBetween(ref, todayISO);
+  }
+  function quoteBucket(quote, targets, todayISO) {
+    if (!OPEN_QUOTE[quote.status]) return 'closed';
+    var age = daysBetween(quote.sentDate, todayISO);
+    if (age > targets.quoteStaleDays) return 'stale';
+    if (age > targets.quoteFollowUpDays) return 'due';
+    return 'fresh';
+  }
+  /* Follow-up queue: open quotes past the chase window, weighted by value x age. */
+  function followUpQueue(quotes, targets, todayISO) {
+    return quotes
+      .filter(function (q) { return OPEN_QUOTE[q.status] && daysBetween(q.sentDate, todayISO) > targets.quoteFollowUpDays; })
+      .map(function (q) {
+        var age = daysBetween(q.sentDate, todayISO);
+        return {
+          id: q.id, clientId: q.clientId, title: q.title, value: q.value,
+          status: q.status, ageDays: age,
+          priority: round2(q.value * age / targets.quoteFollowUpDays)
+        };
+      })
+      .sort(function (a, b) { return b.priority - a.priority; });
+  }
+  function quoteStats(quotes, targets, todayISO) {
+    var open = 0, openValue = 0, overdue = 0, overdueValue = 0, won = 0, lost = 0;
+    var buckets = { fresh: 0, due: 0, stale: 0 };
+    (quotes || []).forEach(function (q) {
+      if (OPEN_QUOTE[q.status]) {
+        open++; openValue += q.value;
+        buckets[quoteBucket(q, targets, todayISO)]++;
+        if (daysBetween(q.sentDate, todayISO) > targets.quoteFollowUpDays) {
+          overdue++; overdueValue += q.value;
+        }
+      } else if (q.status === 'won') won++;
+      else if (q.status === 'lost') lost++;
+    });
+    var closed = won + lost;
+    return {
+      open: open, openValue: round2(openValue),
+      overdueCount: overdue, overdueValue: round2(overdueValue),
+      buckets: buckets, won: won, lost: lost,
+      conversionPct: closed ? round2((won / closed) * 100) : 0
+    };
+  }
+
+  // --- margin aggregates -----------------------------------------------------------
+  function realisedMargin(jobs, technicians) {
+    var sell = 0, cost = 0, count = 0;
+    (jobs || []).forEach(function (j) {
+      if (j.status !== 'invoiced') return;
+      count++;
+      sell += j.invoiceAmount != null ? j.invoiceAmount : j.quoted;
+      cost += computeJobCost(j, technicians).costToDate;
+    });
+    return { count: count, sell: round2(sell), cost: round2(cost), pct: round2(pctOf(sell - cost, sell)) };
+  }
+  function activeMargin(jobs, technicians) {
+    var quoted = 0, proj = 0, count = 0;
+    (jobs || []).forEach(function (j) {
+      if (!isOpenJob(j)) return;
+      count++;
+      quoted += j.quoted;
+      proj += projectedCost(j, technicians);
+    });
+    return { count: count, quoted: round2(quoted), projectedCost: round2(proj), pct: round2(pctOf(quoted - proj, quoted)) };
+  }
+
+  // --- client accounts ------------------------------------------------------------
+  function clientSummary(c, jobs, quotes, targets, todayISO) {
+    var cj = jobs.filter(function (j) { return j.clientId === c.id; });
+    var open = cj.filter(isOpenJob);
+    var oq = quotes.filter(function (q) { return q.clientId === c.id && OPEN_QUOTE[q.status]; });
+    var contactDays = daysBetween(c.lastContact, todayISO);
+    return {
+      clientId: c.id, name: c.name, sector: c.sector, health: c.health,
+      revenueYtd: c.revenueYtd || 0,
+      openJobs: open.length,
+      openJobValue: round2(open.reduce(function (s, j) { return s + j.quoted; }, 0)),
+      openQuoteCount: oq.length,
+      openQuoteValue: round2(oq.reduce(function (s, q) { return s + q.value; }, 0)),
+      opportunityValue: round2((c.opportunities || []).reduce(function (s, o) { return s + (o.value || 0); }, 0)),
+      contactDays: contactDays,
+      contactOverdue: contactDays > targets.contactCadenceDays,
+      nextContactDue: addDaysISO(c.lastContact, targets.contactCadenceDays)
+    };
+  }
+  function clientSummaries(clients, jobs, quotes, targets, todayISO) {
+    return (clients || []).map(function (c) { return clientSummary(c, jobs, quotes, targets, todayISO); });
+  }
+
+  // --- KPI roll-up -------------------------------------------------------------------
+  function kpiSummary(data, targets, todayISO) {
+    return {
+      realisedMargin: realisedMargin(data.jobs, data.technicians),
+      openMargin: activeMargin(data.jobs, data.technicians),
+      utilisation: fleetUtilisation(data.technicians),
+      quotes: quoteStats(data.quotes, targets, todayISO),
+      wipValue: activeMargin(data.jobs, data.technicians).quoted
+    };
+  }
+
+  // --- alerts (the AM's action queue) ------------------------------------------------
+  function buildAlerts(data, targets, todayISO) {
+    var alerts = [];
+    var jobs = data.jobs || [], quotes = data.quotes || [], technicians = data.technicians || [];
+    var clients = data.clients || [];
+
+    jobs.forEach(function (j) {
+      var v = jobMarginView(j, technicians, targets, todayISO);
+      if (isOpenJob(j) && (v.status === 'eroded' || (v.status === 'watch' && v.flags.indexOf('hrs-over-budget') !== -1))) {
+        var hrs = v.flags.indexOf('hrs-over-budget') !== -1
+          ? ' Hours are ' + Math.round(v.hrsUsedPct) + '% of budget — re-forecast before further labour is committed.'
+          : '';
+        alerts.push({
+          severity: j.status === 'approved' ? 'warning' : 'critical',
+          area: 'Margin',
+          title: j.id + ' projected margin ' + v.effectiveMarginPct.toFixed(1) + '% vs ' + targets.grossMarginPct + '% target',
+          detail: (j.title || '') + hrs,
+          tab: 'jobs', refId: j.id
+        });
+      }
+      if (j.whs && (j.status === 'scheduled' || j.status === 'in-progress')) {
+        var missing = [];
+        if (!j.whs.swms) missing.push('SWMS');
+        if (!j.whs.jsa) missing.push('JSA');
+        if (missing.length) {
+          alerts.push({
+            severity: 'critical', area: 'WHS',
+            title: j.id + ' ' + j.status.replace('-', ' ') + ' without ' + missing.join(' + '),
+            detail: j.title || '',
+            tab: 'jobs', refId: j.id
+          });
+        }
+      }
+      if (v.flags.indexOf('close-out-overdue') !== -1) {
+        var days = daysBetween(j.completedDate, todayISO);
+        alerts.push({
+          severity: days > targets.closeOutDays * 2 ? 'critical' : 'warning',
+          area: 'Close-out',
+          title: j.id + ' completed ' + days + 'd ago — not invoiced',
+          detail: (j.title || '') + (v.flags.indexOf('notes-not-audited') !== -1 ? ' Job notes not yet audited.' : ''),
+          tab: 'jobs', refId: j.id
+        });
+      } else if (v.flags.indexOf('notes-not-audited') !== -1) {
+        alerts.push({
+          severity: 'info', area: 'Team',
+          title: j.id + ' job notes not audited',
+          detail: j.title || '',
+          tab: 'jobs', refId: j.id
+        });
+      }
+      if (v.flags.indexOf('unscheduled') !== -1) {
+        alerts.push({
+          severity: 'warning', area: 'Delivery',
+          title: j.id + ' approved ' + daysBetween(j.approvedDate, todayISO) + 'd ago — still unscheduled',
+          detail: j.title || '',
+          tab: 'jobs', refId: j.id
+        });
+      }
+    });
+
+    technicians.forEach(function (t) {
+      var u = technicianUtilisation(t, targets);
+      if (u.flags.indexOf('downtime-critical') !== -1 || u.flags.indexOf('downtime-over-target') !== -1) {
+        alerts.push({
+          severity: u.flags.indexOf('downtime-critical') !== -1 ? 'critical' : 'warning',
+          area: 'Team',
+          title: t.name + ' — ' + u.downtimePct.toFixed(0) + '% non-billable downtime this week',
+          detail: t.downtimeReason || 'Review allocation and plan ahead to reduce avoidable downtime.',
+          tab: 'team', refId: t.id
+        });
+      }
+      if (u.flags.indexOf('notes-audit-gap') !== -1) {
+        alerts.push({
+          severity: 'info', area: 'Team',
+          title: t.name + ' — notes audit ' + (t.notesAuditedPct || 0) + '% (min ' + targets.notesAuditMinPct + '%)',
+          detail: 'Schedule a job-note audit session.',
+          tab: 'team', refId: t.id
+        });
+      }
+    });
+
+    quotes.forEach(function (q) {
+      if (!OPEN_QUOTE[q.status]) return;
+      var age = daysBetween(q.sentDate, todayISO);
+      if (age > targets.quoteStaleDays) {
+        alerts.push({
+          severity: q.value >= 10000 ? 'critical' : 'warning',
+          area: 'Quotes',
+          title: q.id + ' stale ' + age + 'd — ' + money(q.value),
+          detail: (q.title || '') + (q.status === 'follow-up'
+            ? ' Follow-up sent, no response — escalate or close out.'
+            : ' Past the follow-up window — chase or formally close.'),
+          tab: 'quotes', refId: q.id
+        });
+      } else if (age > targets.quoteFollowUpDays) {
+        alerts.push({
+          severity: 'warning', area: 'Quotes',
+          title: q.id + ' follow-up due (' + age + 'd since sent)',
+          detail: q.title || '',
+          tab: 'quotes', refId: q.id
+        });
+      }
+    });
+
+    clients.forEach(function (c) {
+      var cs = clientSummary(c, jobs, quotes, targets, todayISO);
+      if (cs.contactOverdue) {
+        alerts.push({
+          severity: 'warning', area: 'Clients',
+          title: c.name + ' — no contact for ' + cs.contactDays + 'd',
+          detail: 'Cadence target is ' + targets.contactCadenceDays + 'd. Book a site visit or call.',
+          tab: 'clients', refId: c.id
+        });
+      }
+      if (c.health === 'at-risk' && cs.openQuoteValue > 0) {
+        alerts.push({
+          severity: 'warning', area: 'Clients',
+          title: c.name + ' at risk with ' + money(cs.openQuoteValue) + ' of open quotes',
+          detail: c.note || 'Rebuild confidence before pushing commercial opportunities.',
+          tab: 'clients', refId: c.id
+        });
+      }
+    });
+
+    var rm = realisedMargin(jobs, technicians);
+    if (rm.count > 0 && rm.pct < targets.grossMarginPct) {
+      var worst = null;
+      jobs.forEach(function (j) {
+        if (j.status !== 'invoiced') return;
+        var v = jobMarginView(j, technicians, targets, todayISO);
+        if (!worst || v.effectiveMarginPct < worst.pct) worst = { id: j.id, pct: v.effectiveMarginPct };
+      });
+      alerts.push({
+        severity: 'info', area: 'Margin',
+        title: 'Realised gross margin ' + rm.pct.toFixed(1) + '% below ' + targets.grossMarginPct + '% target',
+        detail: 'Largest erosion: ' + worst.id + ' at ' + worst.pct.toFixed(1) + '% — schedule a root-cause review.',
+        tab: 'jobs', refId: worst.id
+      });
+    }
+
+    return alerts.sort(function (a, b) { return SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]; });
+  }
+
+  return {
+    DEFAULT_TARGETS: DEFAULT_TARGETS,
+    parseISO: parseISO,
+    daysBetween: daysBetween,
+    addDaysISO: addDaysISO,
+    avgCostRate: avgCostRate,
+    computeJobCost: computeJobCost,
+    projectedCost: projectedCost,
+    jobMarginView: jobMarginView,
+    technicianUtilisation: technicianUtilisation,
+    fleetUtilisation: fleetUtilisation,
+    quoteAgeDays: quoteAgeDays,
+    quoteBucket: quoteBucket,
+    followUpQueue: followUpQueue,
+    quoteStats: quoteStats,
+    realisedMargin: realisedMargin,
+    activeMargin: activeMargin,
+    clientSummary: clientSummary,
+    clientSummaries: clientSummaries,
+    kpiSummary: kpiSummary,
+    buildAlerts: buildAlerts,
+    money: money
+  };
+});
+
+</script>
+<script>
+/* AmpDesk demo dataset — an illustrative electrical service portfolio.
+ * All dates are offsets from the day the app is opened, so the workspace
+ * always looks current. Keep targets in sync with DEFAULT_TARGETS in logic.js. */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.AmpDeskData = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  function buildDemoData(referenceISO) {
+    function d(offset) {
+      var base = referenceISO.split('-');
+      var t = Date.UTC(Number(base[0]), Number(base[1]) - 1, Number(base[2])) + offset * 86400000;
+      return new Date(t).toISOString().slice(0, 10);
+    }
+
+    var targets = {
+      grossMarginPct: 32,
+      watchBandPct: 5,
+      billableUtilisationPct: 78,
+      downtimePct: 10,
+      quoteFollowUpDays: 5,
+      quoteStaleDays: 10,
+      quoteConversionPct: 55,
+      closeOutDays: 7,
+      unscheduleAlertDays: 5,
+      contactCadenceDays: 30,
+      notesAuditMinPct: 90
+    };
+
+    var clients = [
+      {
+        id: 'c1', name: 'Meridian Retail Group', sector: 'Retail portfolio — 5 QLD sites',
+        contact: 'Dana Whitfield, Facilities Manager', health: 'stable',
+        revenueYtd: 96400, lastContact: d(-6),
+        opportunities: [
+          { title: 'LED retrofit — Level 3 & fire stair (quote open)', value: 16200, stage: 'Quoted' },
+          { title: 'Lighting maintenance contract FY27', value: 38000, stage: 'Scoping' }
+        ]
+      },
+      {
+        id: 'c2', name: 'Bayside Cold Logistics', sector: 'Cold-chain logistics — 2 sites',
+        contact: 'Ray Chen, Operations Manager', health: 'strong',
+        revenueYtd: 74200, lastContact: d(-3),
+        opportunities: [
+          { title: 'Genset ATS replacement (quote open)', value: 9800, stage: 'Quoted' },
+          { title: 'Refrigeration plant maintenance contract FY27', value: 52000, stage: 'Proposal' }
+        ]
+      },
+      {
+        id: 'c3', name: "St Martin's College", sector: 'Independent school — GP & science blocks',
+        contact: 'Alison Gray, Business Manager', health: 'strong',
+        revenueYtd: 58600, lastContact: d(-14),
+        opportunities: [
+          { title: 'Science block power upgrade (quote open)', value: 21000, stage: 'Quoted' },
+          { title: 'Classroom LED program — stage 2', value: 18500, stage: 'Scoping' }
+        ]
+      },
+      {
+        id: 'c4', name: 'Kedron Medical Centre', sector: 'Medical — practice & imaging suites',
+        contact: 'Helen Voss, Practice Manager', health: 'stable',
+        revenueYtd: 41300, lastContact: d(-38),
+        opportunities: [
+          { title: 'Solar & battery monitoring install (quote open)', value: 31500, stage: 'Quoted' }
+        ]
+      },
+      {
+        id: 'c5', name: 'Northgate Foods Manufacturing', sector: 'Food manufacturing — 3 production lines',
+        contact: 'Greg Sands, Engineering Manager', health: 'at-risk',
+        revenueYtd: 88900, lastContact: d(-19),
+        note: 'Response-time concerns raised Oct 2026 — recovery plan in progress.',
+        opportunities: [
+          { title: 'Compressed air ring main circuit (quote open)', value: 14800, stage: 'Quoted' },
+          { title: 'Switchboard maintenance contract FY27 (quote open)', value: 46000, stage: 'Quoted' }
+        ]
+      },
+      {
+        id: 'c6', name: 'Hamilton Point Commercial Towers', sector: 'Commercial towers — 2 buildings',
+        contact: 'Marta Kilby, Building Manager', health: 'stable',
+        revenueYtd: 63700, lastContact: d(-9),
+        opportunities: [
+          { title: 'Atrium feature lighting — Level 12 (quote open)', value: 27500, stage: 'Quoted' },
+          { title: 'EV charging — phase 2, 6 bays', value: 42000, stage: 'Proposal' }
+        ]
+      }
+    ];
+
+    var technicians = [
+      { id: 't1', name: 'Marcus Reed', level: 'A-Grade Electrician', costRate: 58, chargeRate: 128, availableHrsPerWeek: 38, billableHrsThisWeek: 35, downtimeHrsThisWeek: 2, downtimeReason: 'Unplanned parts run.', notesAuditedPct: 100 },
+      { id: 't2', name: 'Priya Nair', level: 'Electrician', costRate: 52, chargeRate: 118, availableHrsPerWeek: 38, billableHrsThisWeek: 37, downtimeHrsThisWeek: 1, downtimeReason: 'Travel between sites.', notesAuditedPct: 92 },
+      { id: 't3', name: 'Daniel Okafor', level: '4th Year Apprentice', costRate: 38, chargeRate: 72, availableHrsPerWeek: 38, billableHrsThisWeek: 22, downtimeHrsThisWeek: 12, downtimeReason: 'Idle 2 days awaiting switchboard delivery (J-2005).', notesAuditedPct: 70 },
+      { id: 't4', name: 'Sophie Tran', level: '2nd Year Apprentice', costRate: 30, chargeRate: 58, availableHrsPerWeek: 38, billableHrsThisWeek: 30, downtimeHrsThisWeek: 3, downtimeReason: 'Site standby — client access delays.', notesAuditedPct: 88 },
+      { id: 't5', name: 'Jack Morris', level: 'Trades Assistant', costRate: 28, chargeRate: 48, availableHrsPerWeek: 38, billableHrsThisWeek: 26, downtimeHrsThisWeek: 5, downtimeReason: 'Cable jointing course (approved training).', notesAuditedPct: 95 }
+    ];
+
+    /* Jobs. Coherence notes: Q-3008 (won) became J-2012; Q-3010 (won) became J-2011. */
+    var jobs = [
+      // --- invoiced (realised margin) ---
+      { id: 'J-2001', clientId: 'c3', title: 'Exit & emergency lighting test — AS 2293 annual round', status: 'invoiced', quoted: 4950, invoiceAmount: 4950, budgetHrs: 48, actualHrs: 50, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 950, techIds: ['t1', 't4'], approvedDate: d(-70), scheduledDate: d(-52), completedDate: d(-45), invoiceDate: d(-40), whs: { swms: true, jsa: true, testResults: true }, notesAudited: true },
+      { id: 'J-2002', clientId: 'c4', title: 'RCD compliance testing & equipment tagging round', status: 'invoiced', quoted: 3100, invoiceAmount: 3100, budgetHrs: 32, actualHrs: 28, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 420, techIds: ['t2'], approvedDate: d(-55), scheduledDate: d(-40), completedDate: d(-33), invoiceDate: d(-28), whs: { swms: true, jsa: true, testResults: true }, notesAudited: true },
+      { id: 'J-2003', clientId: 'c1', title: 'LED retrofit — Level 2 & carparks (Riverlink store)', status: 'invoiced', quoted: 24750, invoiceAmount: 24750, budgetHrs: 96, actualHrs: 118, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 14800, techIds: ['t1', 't2', 't4'], approvedDate: d(-48), scheduledDate: d(-36), completedDate: d(-17), invoiceDate: d(-12), whs: { swms: true, jsa: true, testResults: true }, notesAudited: true },
+      { id: 'J-2004', clientId: 'c2', title: 'Backup generator annual service & load-bank test', status: 'invoiced', quoted: 5750, invoiceAmount: 5750, budgetHrs: 24, actualHrs: 22, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 2100, techIds: ['t1'], approvedDate: d(-44), scheduledDate: d(-30), completedDate: d(-25), invoiceDate: d(-20), whs: { swms: true, jsa: true, testResults: true }, notesAudited: true },
+      { id: 'J-2014', clientId: 'c3', title: 'Classroom lighting circuit repair — Block C', status: 'invoiced', quoted: 900, invoiceAmount: 900, budgetHrs: 10, actualHrs: 9, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 120, techIds: ['t3'], approvedDate: d(-75), scheduledDate: d(-64), completedDate: d(-60), invoiceDate: d(-55), whs: { swms: true, jsa: true, testResults: true }, notesAudited: true },
+
+      // --- in progress ---
+      { id: 'J-2005', clientId: 'c5', title: 'Switchboard upgrade — ACB & busbar replacement (Line 4 MDB)', status: 'in-progress', quoted: 44500, budgetHrs: 140, actualHrs: 66, estToComplete: { hrs: 74, materials: 0 }, materialsCost: 22400, techIds: ['t1', 't2'], approvedDate: d(-21), scheduledDate: d(-9), whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+      { id: 'J-2006', clientId: 'c6', title: 'Level 7 fit-out — distribution boards & submains', status: 'in-progress', quoted: 9900, budgetHrs: 64, actualHrs: 71, estToComplete: { hrs: 12, materials: 0 }, materialsCost: 3900, techIds: ['t2', 't3'], approvedDate: d(-30), scheduledDate: d(-16), whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+      { id: 'J-2007', clientId: 'c1', title: 'Car park lighting circuit fault-finding — South Bank store', status: 'in-progress', quoted: 1850, budgetHrs: 16, actualHrs: 9, estToComplete: { hrs: 5, materials: 120 }, materialsCost: 240, techIds: ['t3'], approvedDate: d(-12), scheduledDate: d(-4), whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+
+      // --- scheduled ---
+      { id: 'J-2008', clientId: 'c2', title: 'Cold store LED & emergency light upgrade', status: 'scheduled', quoted: 12400, budgetHrs: 58, actualHrs: 0, estToComplete: { hrs: 58, materials: 4400 }, materialsCost: 0, techIds: ['t2', 't4'], approvedDate: d(-6), scheduledDate: d(3), whs: { swms: false, jsa: false, testResults: false }, notesAudited: false },
+      { id: 'J-2009', clientId: 'c4', title: '6-monthly RCD & emergency lighting round — Q1 FY27', status: 'scheduled', quoted: 4600, budgetHrs: 40, actualHrs: 0, estToComplete: { hrs: 40, materials: 250 }, materialsCost: 0, techIds: ['t2', 't4'], approvedDate: d(-10), scheduledDate: d(6), whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+
+      // --- approved, awaiting schedule ---
+      { id: 'J-2010', clientId: 'c5', title: 'Thermographic scan — MCC & main distribution boards', status: 'approved', quoted: 2600, budgetHrs: 20, actualHrs: 0, estToComplete: { hrs: 20, materials: 0 }, materialsCost: 0, techIds: ['t1'], approvedDate: d(-9), scheduledDate: null, whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+      { id: 'J-2011', clientId: 'c6', title: 'EV charger installation — basement P2 (4 bays)', status: 'approved', quoted: 21500, budgetHrs: 90, actualHrs: 0, estToComplete: { hrs: 90, materials: 11500 }, materialsCost: 0, techIds: ['t1', 't3', 't5'], approvedDate: d(-3), scheduledDate: null, whs: { swms: true, jsa: true, testResults: false }, notesAudited: false },
+
+      // --- completed, awaiting close-out ---
+      { id: 'J-2012', clientId: 'c1', title: 'Shopfront feature lighting repair — South Bank store', status: 'completed', quoted: 2550, budgetHrs: 14, actualHrs: 15, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 680, techIds: ['t1'], approvedDate: d(-26), scheduledDate: d(-13), completedDate: d(-9), whs: { swms: true, jsa: true, testResults: true }, notesAudited: false },
+      { id: 'J-2013', clientId: 'c2', title: 'BMS fault — condenser fans hunting (dock 3)', status: 'completed', quoted: 1250, budgetHrs: 12, actualHrs: 11, estToComplete: { hrs: 0, materials: 0 }, materialsCost: 150, techIds: ['t1', 't3'], approvedDate: d(-14), scheduledDate: d(-6), completedDate: d(-2), whs: { swms: true, jsa: true, testResults: true }, notesAudited: false }
+    ];
+
+    var quotes = [
+      { id: 'Q-3001', clientId: 'c5', title: 'Compressed air ring main — new circuit & isolators', value: 14800, sentDate: d(-12), status: 'sent' },
+      { id: 'Q-3002', clientId: 'c6', title: 'Atrium feature lighting upgrade — Level 12', value: 27500, sentDate: d(-8), status: 'viewed' },
+      { id: 'Q-3003', clientId: 'c3', title: 'Science block power upgrade — new sub-board', value: 21000, sentDate: d(-6), status: 'viewed' },
+      { id: 'Q-3004', clientId: 'c2', title: 'Genset ATS replacement', value: 9800, sentDate: d(-11), status: 'follow-up', lastTouch: d(-6) },
+      { id: 'Q-3005', clientId: 'c4', title: 'Solar & battery monitoring install', value: 31500, sentDate: d(-3), status: 'viewed' },
+      { id: 'Q-3006', clientId: 'c1', title: 'LED retrofit — Level 3 & fire stair', value: 16200, sentDate: d(-2), status: 'sent' },
+      { id: 'Q-3007', clientId: 'c5', title: 'Switchboard maintenance contract — FY27', value: 46000, sentDate: d(-4), status: 'sent' },
+      { id: 'Q-3008', clientId: 'c1', title: 'Shopfront feature lighting repair — South Bank store', value: 2550, sentDate: d(-28), closedDate: d(-21), status: 'won' },
+      { id: 'Q-3009', clientId: 'c2', title: 'Dock lighting replacement — warehouse 2', value: 3400, sentDate: d(-24), closedDate: d(-15), status: 'lost' },
+      { id: 'Q-3010', clientId: 'c6', title: 'EV charging phase 1 — basement P2', value: 21500, sentDate: d(-10), closedDate: d(-3), status: 'won' }
+    ];
+
+    return { clients: clients, technicians: technicians, jobs: jobs, quotes: quotes, targets: targets };
+  }
+
+  return { buildDemoData: buildDemoData };
+});
+
+</script>
+<script>
+/* AmpDesk UI — renders the workspace from the demo dataset via the logic module. */
+(function () {
+  'use strict';
+
+  var L = window.AmpDeskLogic;
+  var D = window.AmpDeskData;
+
+  function todayISO() {
+    var t = new Date();
+    function p(n) { return String(n).padStart(2, '0'); }
+    return t.getFullYear() + '-' + p(t.getMonth() + 1) + '-' + p(t.getDate());
+  }
+
+  var today = todayISO();
+  var data = D.buildDemoData(today);
+  var T = data.targets;
+
+  var money = function (n) {
+    return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n || 0);
+  };
+  var pctFmt = function (n) { return (Math.round(n * 10) / 10).toFixed(1) + '%'; };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+  var fmtDate = function (iso) {
+    return new Date(L.parseISO(iso)).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  var clientById = {};
+  data.clients.forEach(function (c) { clientById[c.id] = c; });
+  var techById = {};
+  data.technicians.forEach(function (t) { techById[t.id] = t; });
+  var cname = function (id) { return clientById[id] ? clientById[id].name : '—'; };
+  var tnames = function (ids) {
+    return ids.map(function (id) { return techById[id] ? techById[id].name.split(' ')[0] : '?'; }).join(', ');
+  };
+
+  var views = {};
+  data.jobs.forEach(function (j) { views[j.id] = L.jobMarginView(j, data.technicians, T, today); });
+
+  var kpi = L.kpiSummary({ jobs: data.jobs, quotes: data.quotes, technicians: data.technicians }, T, today);
+  var alerts = L.buildAlerts(data, T, today);
+  var queue = L.followUpQueue(data.quotes, T, today);
+  var clientRows = {};
+  L.clientSummaries(data.clients, data.jobs, data.quotes, T, today).forEach(function (s) { clientRows[s.clientId] = s; });
+
+  var JOB_STATUS = {
+    approved: ['Approved', 'blue'], scheduled: ['Scheduled', 'violet'],
+    'in-progress': ['In progress', 'warn'], completed: ['Completed', 'teal'], invoiced: ['Invoiced', 'ok']
+  };
+  var Q_STATUS = {
+    draft: ['Draft', 'grey'], sent: ['Sent', 'blue'], viewed: ['Viewed', 'violet'],
+    'follow-up': ['Follow-up', 'warn'], won: ['Won', 'ok'], lost: ['Lost', 'bad']
+  };
+  var HEALTH = { strong: ['Strong', 'ok'], stable: ['Stable', 'blue'], 'at-risk': ['At risk', 'bad'] };
+  var FLAGS = {
+    'hrs-over-budget': 'Hours over budget', 'whs-incomplete': 'WHS docs incomplete',
+    'close-out-overdue': 'Close-out overdue', 'notes-not-audited': 'Notes not audited',
+    'unscheduled': 'Not yet scheduled'
+  };
+  var TITLES = {
+    board: 'Command Board', jobs: 'Jobs & Margins', quotes: 'Quote Pipeline',
+    team: 'Team & Utilisation', clients: 'Client Accounts'
+  };
+
+  var pill = function (cls, label) { return '<span class="pill ' + cls + '">' + esc(label) + '</span>'; };
+  var jobStatusPill = function (s) { return pill(JOB_STATUS[s][1], JOB_STATUS[s][0]); };
+  var qStatusPill = function (s) { return pill(Q_STATUS[s][1], Q_STATUS[s][0]); };
+  var marginPill = function (v) {
+    var cls = v.status === 'on-target' ? 'ok' : v.status === 'watch' ? 'warn' : 'bad';
+    return pill(cls, pctFmt(v.effectiveMarginPct));
+  };
+  var hrsPill = function (v) {
+    var cls = v.hrsUsedPct <= 100 ? 'ok' : v.hrsUsedPct <= 110 ? 'warn' : 'bad';
+    return pill(cls, Math.round(v.hrsUsedPct) + '% of budget');
+  };
+  var agePill = function (d) {
+    var cls = d > T.quoteStaleDays ? 'bad' : d > T.quoteFollowUpDays ? 'warn' : 'ok';
+    return pill(cls, d + 'd');
+  };
+  var flagsHtml = function (v) {
+    return v.flags.map(function (f) { return '<span class="flag">' + esc(FLAGS[f] || f) + '</span>'; }).join(' ');
+  };
+
+  var state = { tab: 'board', jobsFilter: 'all' };
+
+  // ---------- renderers ------------------------------------------------------
+
+  function tile(label, value, target, tone, sub) {
+    return '<div class="tile ' + tone + '"><div class="lbl">' + esc(label) + '</div>' +
+      '<div class="val">' + esc(value) + '</div>' +
+      '<div class="tgt">' + esc(target) + (sub ? ' · ' + esc(sub) : '') + '</div></div>';
+  }
+
+  function renderBoard() {
+    var alertCards = alerts.map(function (a) {
+      return '<button class="alert" data-jump-tab="' + a.tab + '" data-jump-ref="' + esc(a.refId) + '">' +
+        '<span class="sev ' + a.severity + '"></span>' +
+        '<span class="body"><span class="t">' + esc(a.title) + '</span>' +
+        '<span class="d">' + esc(a.detail) + '</span></span>' +
+        '<span class="area">' + esc(a.area) + '</span></button>';
+    }).join('');
+
+    var rm = kpi.realisedMargin, om = kpi.openMargin, ut = kpi.utilisation, qs = kpi.quotes;
+    var tiles = [
+      tile('Realised gross margin', pctFmt(rm.pct), 'Target ≥ ' + T.grossMarginPct + '%',
+        rm.pct >= T.grossMarginPct ? 'good' : rm.pct >= T.grossMarginPct - T.watchBandPct ? 'mid' : 'bad',
+        rm.count + ' invoiced jobs'),
+      tile('Open-margin (projected)', pctFmt(om.pct), 'Target ≥ ' + T.grossMarginPct + '%',
+        om.pct >= T.grossMarginPct ? 'good' : om.pct >= T.grossMarginPct - T.watchBandPct ? 'mid' : 'bad',
+        om.count + ' active jobs · WIP ' + money(kpi.wipValue)),
+      tile('Billable utilisation', pctFmt(ut.billablePct), 'Target ≥ ' + T.billableUtilisationPct + '%',
+        ut.billablePct >= T.billableUtilisationPct ? 'good' : ut.billablePct >= T.billableUtilisationPct - 6 ? 'mid' : 'bad',
+        ut.billableHrs + ' of ' + ut.availableHrs + ' hrs'),
+      tile('Non-billable downtime', pctFmt(ut.downtimePct), 'Target ≤ ' + T.downtimePct + '%',
+        ut.downtimePct <= T.downtimePct ? 'good' : ut.downtimePct <= T.downtimePct * 1.5 ? 'mid' : 'bad',
+        ut.downtimeHrs + ' hrs this week'),
+      tile('Quote conversion', pctFmt(qs.conversionPct), 'Target ≥ ' + T.quoteConversionPct + '%',
+        qs.conversionPct >= T.quoteConversionPct ? 'good' : qs.conversionPct >= T.quoteConversionPct - 10 ? 'mid' : 'bad',
+        qs.won + ' won / ' + qs.lost + ' lost'),
+      tile('Follow-ups overdue', String(qs.overdueCount), 'Chase window ' + T.quoteFollowUpDays + 'd',
+        qs.overdueCount === 0 ? 'good' : qs.overdueCount <= 2 ? 'mid' : 'bad',
+        money(qs.overdueValue) + ' at risk')
+    ].join('');
+
+    var watch = data.jobs
+      .filter(function (j) { return j.status === 'approved' || j.status === 'scheduled' || j.status === 'in-progress'; })
+      .map(function (j) { return views[j.id]; })
+      .sort(function (a, b) { return a.effectiveMarginPct - b.effectiveMarginPct; })
+      .slice(0, 6);
+    var watchRows = watch.map(function (v) {
+      var j = data.jobs.find(function (x) { return x.id === v.id; });
+      return '<tr data-row="' + v.id + '"><td class="num"><b>' + v.id + '</b></td>' +
+        '<td><span class="tt">' + esc(j.title) + '</span><div class="small">' + esc(cname(j.clientId)) + '</div></td>' +
+        '<td class="num">' + marginPill(v) + '</td><td class="num">' + hrsPill(v) + '</td></tr>';
+    }).join('');
+
+    var queueRows = queue.slice(0, 5).map(function (q) {
+      return '<tr data-row="' + q.id + '"><td class="num"><b>' + q.id + '</b></td>' +
+        '<td><span class="tt">' + esc(q.title) + '</span><div class="small">' + esc(cname(q.clientId)) + '</div></td>' +
+        '<td class="num">' + money(q.value) + '</td><td class="num">' + agePill(q.ageDays) + '</td>' +
+        '<td>' + qStatusPill(q.status) + '</td></tr>';
+    }).join('');
+
+    return '<div class="card"><h2>Action queue — ' + alerts.length + ' items</h2>' +
+      '<div class="alerts">' + alertCards + '</div></div>' +
+      '<div class="tiles">' + tiles + '</div>' +
+      '<div class="two">' +
+      '<div class="card"><h2>Margin watchlist — thinnest projected margin first</h2>' +
+      '<table><thead><tr><th>Job</th><th>Work</th><th>Margin</th><th>Hours</th></tr></thead><tbody>' +
+      (watchRows || '<tr><td colspan="4" class="small">No open jobs.</td></tr>') +
+      '</tbody></table></div>' +
+      '<div class="card"><h2>Follow-up queue — value × age</h2>' +
+      '<table><thead><tr><th>Quote</th><th>Scope</th><th>Value</th><th>Age</th><th>State</th></tr></thead><tbody>' +
+      (queueRows || '<tr><td colspan="5" class="small">Nothing past the follow-up window.</td></tr>') +
+      '</tbody></table></div>' +
+      '</div>';
+  }
+
+  function renderJobs() {
+    var statuses = ['all', 'approved', 'scheduled', 'in-progress', 'completed', 'invoiced'];
+    var chips = statuses.map(function (s) {
+      var n = s === 'all' ? data.jobs.length : data.jobs.filter(function (j) { return j.status === s; }).length;
+      var label = s === 'all' ? 'All' : JOB_STATUS[s][0];
+      return '<button data-filter="' + s + '" class="' + (state.jobsFilter === s ? 'active' : '') + '">' +
+        label + ' <span class="n">' + n + '</span></button>';
+    }).join('');
+
+    var rows = data.jobs
+      .filter(function (j) { return state.jobsFilter === 'all' || j.status === state.jobsFilter; })
+      .sort(function (a, b) {
+        var order = { approved: 0, scheduled: 1, 'in-progress': 2, completed: 3, invoiced: 4 };
+        if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+        return views[a.id].effectiveMarginPct - views[b.id].effectiveMarginPct;
+      })
+      .map(function (j) {
+        var v = views[j.id];
+        var hint = j.status === 'invoiced' ? 'Realised margin' : 'Projected final margin';
+        return '<tr data-row="' + j.id + '">' +
+          '<td class="num"><b>' + j.id + '</b></td>' +
+          '<td><span class="tt">' + esc(j.title) + '</span><div class="small">' + esc(cname(j.clientId)) + '</div></td>' +
+          '<td>' + jobStatusPill(j.status) + '</td>' +
+          '<td class="small">' + esc(tnames(j.techIds)) + '</td>' +
+          '<td class="num"><div>' + j.actualHrs + ' / ' + j.budgetHrs + ' h</div>' + hrsPill(v) + '</td>' +
+          '<td class="num">' + money(v.costToDate) + '</td>' +
+          '<td class="num">' + money(v.sell) + '</td>' +
+          '<td class="num"><span title="' + hint + '">' + marginPill(v) + '</span></td>' +
+          '<td>' + (flagsHtml(v) || '<span class="small">—</span>') + '</td></tr>';
+      }).join('');
+
+    return '<div class="filters">' + chips + '</div>' +
+      '<div class="card"><table><thead><tr>' +
+      '<th>Job</th><th>Work</th><th>Status</th><th>Crew</th><th>Hours</th>' +
+      '<th>Cost to date</th><th>Sell</th><th>Margin</th><th>Flags</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function renderQuotes() {
+    var qs = kpi.quotes;
+    var stats =
+      '<span class="chip">Open: ' + qs.open + ' quotes · ' + money(qs.openValue) + '</span>' +
+      '<span class="chip">Follow-ups overdue: ' + qs.overdueCount + ' · ' + money(qs.overdueValue) + '</span>' +
+      '<span class="chip">Conversion: ' + pctFmt(qs.conversionPct) + ' (' + qs.won + 'W / ' + qs.lost + 'L)</span>';
+
+    var buckets = ['fresh', 'due', 'stale'].map(function (b) {
+      var label = b === 'fresh' ? 'Fresh (≤' + T.quoteFollowUpDays + 'd)' :
+        b === 'due' ? 'Follow-up due (' + (T.quoteFollowUpDays + 1) + '–' + T.quoteStaleDays + 'd)' :
+          'Stale (>' + T.quoteStaleDays + 'd)';
+      var cls = b === 'fresh' ? 'ok' : b === 'due' ? 'warn' : 'bad';
+      var cards = data.quotes.filter(function (q) {
+        return L.quoteBucket(q, T, today) === b;
+      }).map(function (q) {
+        var age = L.quoteAgeDays(q, today);
+        return '<div class="qcard" data-row="' + q.id + '"><div class="qh"><b>' + q.id + '</b>' + qStatusPill(q.status) + '</div>' +
+          '<div class="tt">' + esc(q.title) + '</div><div class="small">' + esc(cname(q.clientId)) + '</div>' +
+          '<div style="margin-top:6px;display:flex;justify-content:space-between;align-items:baseline">' +
+          '<span class="num" style="font-weight:800">' + money(q.value) + '</span>' +
+          '<span class="small">sent ' + age + 'd ago · ' + agePill(age) + '</span></div></div>';
+      }).join('');
+      return '<div class="card"><h2>' + label + ' ' + pill(cls, String(qs.buckets[b])) + '</h2>' +
+        (cards || '<div class="small">None.</div>') + '</div>';
+    }).join('');
+
+    var closed = data.quotes.filter(function (q) { return q.status === 'won' || q.status === 'lost'; })
+      .map(function (q) {
+        return '<tr><td class="num"><b>' + q.id + '</b></td>' +
+          '<td><span class="tt">' + esc(q.title) + '</span><div class="small">' + esc(cname(q.clientId)) + '</div></td>' +
+          '<td class="num">' + money(q.value) + '</td><td>' + qStatusPill(q.status) + '</td>' +
+          '<td class="num small">' + fmtDate(q.closedDate) + '</td></tr>';
+      }).join('');
+
+    return '<div class="statrow">' + stats + '</div>' +
+      '<div class="buckets">' + buckets + '</div>' +
+      '<div class="card"><h2>Closed quotes</h2><table><thead><tr><th>Quote</th><th>Scope</th><th>Value</th><th>Outcome</th><th>Closed</th></tr></thead><tbody>' +
+      closed + '</tbody></table></div>';
+  }
+
+  function renderTeam() {
+    var cards = data.technicians.map(function (t) {
+      var u = L.technicianUtilisation(t, T);
+      var meterCls = t.notesAuditedPct >= T.notesAuditMinPct ? 'ok' : t.notesAuditedPct >= 80 ? 'warn' : 'bad';
+      var downCls = u.downtimePct <= T.downtimePct ? 'ok' : u.downtimePct <= T.downtimePct * 2 ? 'warn' : 'bad';
+      var activeJobs = data.jobs.filter(function (j) {
+        return (j.status === 'approved' || j.status === 'scheduled' || j.status === 'in-progress') &&
+          j.techIds.indexOf(t.id) !== -1;
+      });
+      var chips = activeJobs.map(function (j) {
+        return '<span class="chip" data-jump-tab="jobs" data-jump-ref="' + j.id + '">' + j.id + ' · ' + esc(j.title.split('—')[0].trim()) + '</span>';
+      }).join(' ');
+      return '<div class="tcard" data-row="' + t.id + '">' +
+        '<div class="thead"><b>' + esc(t.name) + '</b>' + pill('grey', t.level) + '</div>' +
+        '<div class="small" style="margin-top:2px">' + money(t.costRate) + '/h cost · ' + money(t.chargeRate) + '/h charge-out</div>' +
+        '<div class="ustack">' +
+        '<span class="u-bill" style="width:' + Math.max(0, u.billablePct) + '%"></span>' +
+        '<span class="u-down" style="width:' + Math.max(0, u.downtimePct) + '%"></span>' +
+        '<span class="u-idle" style="width:' + Math.max(0, u.idlePct) + '%"></span></div>' +
+        '<div class="small">Billable <b style="color:var(--ok)">' + pctFmt(u.billablePct) + '</b> · ' +
+        'Downtime <b class="' + downCls + '">' + pctFmt(u.downtimePct) + '</b> · ' +
+        'Idle ' + pctFmt(u.idlePct) + '</div>' +
+        '<div class="small" style="margin-top:6px">' + esc(t.downtimeReason || '') + '</div>' +
+        '<div class="small" style="margin-top:8px">Job notes audited: <b>' + t.notesAuditedPct + '%</b> (min ' + T.notesAuditMinPct + '%)</div>' +
+        '<div class="meter ' + meterCls + '"><span style="width:' + Math.min(100, t.notesAuditedPct) + '%"></span></div>' +
+        '<div class="jchips">' + (chips || '<span class="small">No active jobs.</span>') + '</div>' +
+        '</div>';
+    }).join('');
+    var ut = kpi.utilisation;
+    var summary =
+      '<span class="chip">Fleet billable: ' + pctFmt(ut.billablePct) + ' (target ≥ ' + T.billableUtilisationPct + '%)</span>' +
+      '<span class="chip">Fleet downtime: ' + pctFmt(ut.downtimePct) + ' (target ≤ ' + T.downtimePct + '%)</span>';
+    return '<div class="statrow">' + summary + '</div><div class="grid">' + cards + '</div>';
+  }
+
+  function renderClients() {
+    var cards = data.clients.map(function (c) {
+      var s = clientRows[c.id];
+      var h = HEALTH[c.health] || ['—', 'grey'];
+      var opps = (c.opportunities || []).map(function (o) {
+        return '<li><span>' + esc(o.title) + '</span><span class="num">' + money(o.value) + '</span></li>';
+      }).join('');
+      var contact = 'Last contact ' + s.contactDays + 'd ago · next due ' + fmtDate(s.nextContactDue) + ' ' +
+        (s.contactOverdue ? pill('bad', 'Overdue') : pill('ok', 'On cadence'));
+      return '<div class="tcard" data-row="' + c.id + '">' +
+        '<div class="thead"><b>' + esc(c.name) + '</b>' + pill(h[1], h[0]) + '</div>' +
+        '<div class="small" style="margin-top:2px">' + esc(c.sector) + '</div>' +
+        '<div class="rows">' +
+        '<div class="r"><span class="k">Revenue YTD</span><b class="num">' + money(s.revenueYtd) + '</b></div>' +
+        '<div class="r"><span class="k">Open jobs</span><span class="num">' + s.openJobs + ' · ' + money(s.openJobValue) + '</span></div>' +
+        '<div class="r"><span class="k">Open quotes</span><span class="num">' + s.openQuoteCount + ' · ' + money(s.openQuoteValue) + '</span></div>' +
+        '<div class="r"><span class="k">Growth pipeline</span><b class="num">' + money(s.opportunityValue) + '</b></div>' +
+        '</div>' +
+        '<div class="small">' + contact + '</div>' +
+        (c.note ? '<div class="small" style="margin-top:6px;font-style:italic">' + esc(c.note) + '</div>' : '') +
+        '<ul class="opps">' + (opps || '<li><span class="small">No open opportunities.</span></li>') + '</ul>' +
+        '</div>';
+    }).join('');
+    var totalOpp = Object.keys(clientRows).reduce(function (s, id) { return s + clientRows[id].opportunityValue; }, 0);
+    return '<div class="statrow"><span class="chip">Total growth pipeline: ' + money(totalOpp) + '</span>' +
+      '<span class="chip">6 accounts · targets ≥ ' + T.contactCadenceDays + 'd contact cadence</span></div>' +
+      '<div class="grid">' + cards + '</div>';
+  }
+
+  var RENDER = { board: renderBoard, jobs: renderJobs, quotes: renderQuotes, team: renderTeam, clients: renderClients };
+
+  // ---------- wiring -----------------------------------------------------------
+
+  function setTab(tab, ref) {
+    state.tab = tab;
+    render();
+    if (ref) {
+      var row = document.querySelector('[data-row="' + ref + '"]');
+      if (row) {
+        row.classList.remove('flash');
+        void row.offsetWidth;
+        row.classList.add('flash');
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    }
+  }
+
+  function render() {
+    document.querySelectorAll('#nav button').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.tab === state.tab);
+    });
+    document.getElementById('view-title').textContent = TITLES[state.tab];
+    document.getElementById('view').innerHTML = RENDER[state.tab]();
+  }
+
+  document.getElementById('nav').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-tab]');
+    if (b) setTab(b.dataset.tab, null);
+  });
+
+  document.getElementById('view').addEventListener('click', function (e) {
+    var jump = e.target.closest('[data-jump-tab]');
+    if (jump) { setTab(jump.dataset.jumpTab, jump.dataset.jumpRef); return; }
+    var f = e.target.closest('[data-filter]');
+    if (f) { state.jobsFilter = f.dataset.filter; render(); }
+  });
+
+  document.getElementById('today').textContent =
+    new Date().toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+  render();
+})();
+
+</script>
+</body>
+</html>

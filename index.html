@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AmpDesk — Account Manager Command Centre</title>
+<style>
+/*INLINE:styles.css*/
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">Amp<em>Desk</em></div>
+    <div class="tag">Account Manager Command Centre<br>Electrical service operations</div>
+    <nav id="nav" aria-label="Sections">
+      <button data-tab="board" class="active">Command Board</button>
+      <button data-tab="jobs">Jobs &amp; Margins</button>
+      <button data-tab="quotes">Quote Pipeline</button>
+      <button data-tab="team">Team &amp; Utilisation</button>
+      <button data-tab="clients">Client Accounts</button>
+    </nav>
+    <div class="legend">
+      <b>Severity</b>
+      <span><span class="sev critical"></span> Critical — act today</span>
+      <span><span class="sev warning"></span> Warning — this week</span>
+      <span><span class="sev info"></span> Info — monitor</span>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h1 id="view-title">Command Board</h1>
+      <div class="right">
+        <span class="chip" id="today"></span>
+        <span class="chip">Demo data — illustrative</span>
+      </div>
+    </div>
+    <div id="view"></div>
+    <div class="footer">AmpDesk demo build — figures are illustrative. All KPIs are computed live from the dataset by logic covered under automated tests. Built by Tobias Hall · github.com/L-S-CAPITAL</div>
+  </main>
+</div>
+<script>
+/*INLINE:logic.js*/
+</script>
+<script>
+/*INLINE:data.js*/
+</script>
+<script>
+/*INLINE:app.js*/
+</script>
+</body>
+</html>
